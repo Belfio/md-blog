@@ -1,4 +1,4 @@
-# A minimalistic markdown driven blog
+# A minimalistic Markdown Typescript Reactive Blog
 
 ## Powered by Typescript, Vitejs and Preact
 
