@@ -44,11 +44,17 @@ async function getBlogs(): Promise<BlogType[]> {
   const modules = import.meta.glob<Module>("../markdown/blogs/*.md", {
     eager: true,
   });
-  const fileNames: string[] = Object.values(modules).map(
+
+  const filesContent: string[] = Object.values(modules).map(
     (module) => module.default
   );
 
-  const files = await parseFiles(fileNames); // Await the promise here
+  const fileNames = Object.keys(modules).map((filePath) => {
+    const parts = filePath.split("/");
+    return parts[parts.length - 1]; // Extracts the file name from the path
+  });
+
+  const files = await parseFiles(filesContent); // Await the promise here
 
   const blogs = await Promise.all(
     files.map(async (file, i) => {
@@ -56,7 +62,40 @@ async function getBlogs(): Promise<BlogType[]> {
       return {
         title: name,
         description,
-        id: fileNames[i].split(".md")[0].split("/").pop() || "error",
+        id: fileNames[i].split(".md")[0],
+        html,
+      };
+    })
+  );
+
+  return blogs;
+}
+
+async function loadFiles(
+  path: string = "../markdown/blogs/"
+): Promise<BlogType[]> {
+  const modules = import.meta.glob<Module>(`${path}/*.md`, {
+    eager: true,
+  });
+
+  const filesContent: string[] = Object.values(modules).map(
+    (module) => module.default
+  );
+
+  const fileNames = Object.keys(modules).map((filePath) => {
+    const parts = filePath.split("/");
+    return parts[parts.length - 1]; // Extracts the file name from the path
+  });
+
+  const files = await parseFiles(filesContent); // Await the promise here
+
+  const blogs = await Promise.all(
+    files.map(async (file, i) => {
+      const { html, name, description } = await parseMarkdown(file);
+      return {
+        title: name,
+        description,
+        id: fileNames[i].split(".md")[0],
         html,
       };
     })
@@ -69,18 +108,24 @@ async function getProjects(): Promise<ProjectType[]> {
   const modules = import.meta.glob<Module>("../markdown/projects/*.md", {
     eager: true,
   });
-  const fileNames: string[] = Object.values(modules).map(
+
+  const filesContent: string[] = Object.values(modules).map(
     (module) => module.default
   );
 
-  const files = await parseFiles(fileNames); // Await the promise here
+  const fileNames = Object.keys(modules).map((filePath) => {
+    const parts = filePath.split("/");
+    return parts[parts.length - 1]; // Extracts the file name from the path
+  });
+
+  const files = await parseFiles(filesContent); // Await the promise here
   const projects = await Promise.all(
     files.map(async (file, i) => {
       const { html, name, description } = await parseMarkdown(file);
       return {
         name: name,
         description,
-        id: fileNames[i].split(".md")[0].split("/").pop() || "error",
+        id: fileNames[i].split(".md")[0],
         html,
       };
     })
